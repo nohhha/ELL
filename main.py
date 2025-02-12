@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -15,6 +16,7 @@ from DenseNet import DenseNetBC
 from FractalNet import FractalNet
 
 def train(device, dataloader, model, loss_fn, optimizer):
+    start_time = time.time()
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
 
@@ -40,12 +42,15 @@ def train(device, dataloader, model, loss_fn, optimizer):
     
     train_loss /= num_batches
     correct /= size
-    print(f"Train Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {train_loss:>8f} \n")
+    end_time = time.time()
+
+    print(f"Training --- Acc: {(100*correct):>0.1f}%, Avg loss: {train_loss:>8f}, time: {end_time - start_time:.2f} seconds \n")
 
     return train_loss
 
 
 def validation(device, dataloader, model, loss_fn):
+    start_time = time.time()
     size = len(dataloader.dataset) #전체 데이터셋 개수
     num_batches = len(dataloader) #batch 개수
 
@@ -61,12 +66,15 @@ def validation(device, dataloader, model, loss_fn):
 
     val_loss /= num_batches
     correct /= size
+    end_time = time.time()
 
-    print(f"Validation Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {val_loss:>8f} \n")
+    print(f"Validation --- Acc: {(100*correct):>0.1f}%, Avg loss: {val_loss:>8f}, time: {end_time - start_time:.2f} seconds \n")
+
     return val_loss
 
 
 def test(device, dataloader, model, loss_fn):
+    start_time = time.time()
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
 
@@ -82,8 +90,10 @@ def test(device, dataloader, model, loss_fn):
 
     test_loss /= num_batches
     correct /= size
+    end_time = time.time()
 
-    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+    print(f"Test --- \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f}, time: {end_time - start_time:.2f} seconds \n")
+
 
 def select_model(model_name, device):
     if model_name == "Resnet20":
@@ -107,7 +117,7 @@ def select_model(model_name, device):
         optimizer = torch.optim.SGD(model.parameters(), lr=1e-1, weight_decay=1e-4, momentum=0.9)
 
     elif model_name == "FractalNet":
-        model = FractalNet().to(device)
+        model = FractalNet('base').to(device) # base, local, global, mixed
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=2e-2, weight_decay=1e-4, momentum=0.9)
 
